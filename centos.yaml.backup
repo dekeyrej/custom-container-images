@@ -1,0 +1,70 @@
+
+files:
+# sync network config on startup
+- name: nm-sync.service
+  path: /usr/lib/systemd/system/nm-sync.service
+  generator: dump
+  content: |-
+    [Unit]
+    Description=Sync IP via nmcli (centos 10 workaround)
+    After=network-online.target
+
+    [Service]
+    ExecStart=/usr/local/bin/nm-sync.sh
+
+    [Install]
+    WantedBy=multi-user.target
+  releases:
+  - 10-Stream
+
+# sync systemd network config to NetworkManager
+- name: nm-sync.sh
+  path: /usr/local/bin/nm-sync.sh
+  generator: dump
+  content: |-
+    #!/bin/bash
+    echo "🌐 nm-sync.service is starting..."
+    IFCFG="/etc/sysconfig/network-scripts/ifcfg-eth0"
+    if [[ -f "$IFCFG" ]]; then
+      IPADDR=$(grep '^IPADDR=' "$IFCFG" | cut -d= -f2)
+      GATEWAY=$(grep '^GATEWAY=' "$IFCFG" | cut -d= -f2)
+      NETMASK=$(grep '^NETMASK=' "$IFCFG" | cut -d= -f2)
+
+      # Translate netmask to CIDR
+      CIDR=$(ipcalc -p "$IPADDR" "$NETMASK" | awk -F= "{print \$2}")
+      echo "ip=$IPADDR/$CIDR,gw=$GATEWAY"
+
+      nmcli con mod "Wired connection 1" ipv4.method manual \
+        ipv4.addresses "$IPADDR/$CIDR" \
+        ipv4.gateway "$GATEWAY" \
+        connection.autoconnect yes
+
+      nmcli con up "Wired connection 1"
+    else
+      echo "$IFCFG not found"
+    fi
+  mode: 0700
+  releases:
+  - 10-Stream
+
+packages:
+  manager: dnf
+  update: true
+  cleanup: true
+  sets:
+  - packages:
+    - cronie
+    - curl
+    - glibc-langpack-en
+    - hostname
+    - initscripts
+    - openssh-clients
+    - openssh-server  # allow ssh in
+    - ipcalc          # used in network sync
+    - passwd
+    - policycoreutils
+    - rootfiles
+    - sudo
+    - rsyslog
+    - vim-minimal
+    action: install
