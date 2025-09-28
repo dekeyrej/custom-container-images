@@ -1,17 +1,27 @@
-# Configurations and Script to build LXC images
+# Custom LXC Image Builder for Proxmox-VE 9 with Terraform & Ansible Integration
 
-**Purpose:** Build lxc images for use with Proxmox-VE 9 such that containers can be provisioned with OpenTufu/Terraform and be immediately handed off to Ansible for management.
+**Purpose:** Build custom LXC images for Proxmox-VE 9 that support seamless provisioning via OpenTofu/Terraform and immediate handoff to Ansible for configuration management.
 
-**Problem:** The default CT templates provided by Proxmox don't create a non-root user (and thus, don't set authorized_keys for a non-root user), and the lxc images from linuxcontainers.org don't enable openssh-server by default(, nor create a non-root user???).  With either option some sort 'intermediate step' is required to prepare the resulting container for management.
+**Problem:** Default CT templates provided by Proxmox don't create a non-root user (and thus, don't set authorized_keys for a non-root user). LXC images from linuxcontainers.org don't enable `openssh-server`, nor do they create a non-root user. This requires an intermediate step before containers can be managed via Ansible.
 
 **Possible Solutions:**
-- Create a 'local-action' provisioner for tf to 'touch up' the container with a `pct push` of a script, and a `pct exec` to run the script. This is an avenue for follow-on exploration.
-- Wire tf and ansible together such that they share a common view of the inventory so that ansible can `touch up` the containers.  This requires two steps (tf and ansible) before the container can even be accessed. (proof of concept works)
-- Create and apply a `hook script` to the container configuration to execute the `pct push`/`pct exec` actions.  (works/tested)
-- **This Repo** Modify existing [lxc-ci](https://github.com/lxc/lxc-ci/) images (e.g., `ubuntu.yaml`) to enable openssh-server, create a non-root user, enable sudo (without password) for the non-root user, and prepopulate the non-root user's authorized_keys.
 
-The `build_all.sh` script uses [distrobuilder](https://github.com/lxc/distrobuilder/) to build the custom images, and copy them to my Proxmox-VE 9 node.
+- **Local Provisioner Script:** Use Terraform `local-exec` to `pct push` and `pct exec` a setup script. (Exploratory)
+- **Shared Inventory:** Wire Terraform and Ansible to share inventory, allowing Ansible to perform initial setup. (Proof of concept works)
+- **Hook Script:** Apply a container hook script to automate `pct push`/`pct exec`. (Tested and working)
+- **This Repo’s Approach:** Modify [lxc-ci](https://github.com/lxc/lxc-ci/) build definitions (e.g., `ubuntu.yaml`) to:
+  - Enable `openssh-server`
+  - Create a non-root user
+  - Grant passwordless `sudo`
+  - Prepopulate `authorized_keys` for the non-root user
 
-The `test_all.sh` script provisions a modest container for each image to verify functionality.
+**Scripts:**
 
-**Note:** `centos 10` is very new.  As such, (as of: Proxmox-VE 9.0.6), trying to provision a `centos 10` container will fail.  Until it is officially released, you can (if you dare) update /usr/share/perl5/PVE/LXC/Setup/CentOS.pm from [here:](https://raw.githubusercontent.com/proxmox/pve-container/refs/heads/master/src/PVE/LXC/Setup/CentOS.pm). This recognizes CentOS `10` as valid _and_ builds a NetworkManager compliant configuration.  This update _only_ 'fixes' command-line creation using `pct`.  Down-stream updates to the tf provider will still be required before `centos 10` can be provisioned that way.
+- `build_all.sh`: Uses [distrobuilder](https://github.com/lxc/distrobuilder/) to build custom images and copy them to the Proxmox-VE 9 node.
+- `test_all.sh`: Provisions a container for each image to verify functionality.
+
+**Note on CentOS 10:**
+
+CentOS 10 is still emerging. As of Proxmox-VE 9.0.6, provisioning a CentOS 10 container will fail. Until official support lands, you can (if you dare) patch `/usr/share/perl5/PVE/LXC/Setup/CentOS.pm` using [this file](https://raw.githubusercontent.com/proxmox/pve-container/refs/heads/master/src/PVE/LXC/Setup/CentOS.pm). This enables CentOS 10 recognition and generates a NetworkManager-compliant config.
+
+⚠️ This patch only affects command-line provisioning via `pct`. Terraform support will require downstream updates to its Proxmox provider.
