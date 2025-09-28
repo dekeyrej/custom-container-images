@@ -8,9 +8,9 @@
 - Create a 'local-action' provisioner for tf to 'touch up' the container with a `pct push` of a script, and a `pct exec` to run the script. This is an avenue for follow-on exploration.
 - Wire tf and ansible together such that they share a common view of the inventory so that ansible can `touch up` the containers.  This requires two steps (tf and ansible) before the container can even be accessed. (proof of concept works)
 - Create and apply a `hook script` to the container configuration to execute the `pct push`/`pct exec` actions.  (works/tested)
-- **This Repo** Modify existing [lxc-ci](https://github.com/lxc/lxc-ci.git) images (e.g., `ubuntu.yaml`) to enable openssh-server, create a non-root user, enable sudo (without password) for the non-root user, and prepopulate the non-root user's authorized_keys.
+- **This Repo** Modify existing [lxc-ci](https://github.com/lxc/lxc-ci/) images (e.g., `ubuntu.yaml`) to enable openssh-server, create a non-root user, enable sudo (without password) for the non-root user, and prepopulate the non-root user's authorized_keys.
 
-The `build_all.sh` script uses [distrobuilder](https://github.com/lxc/distrobuiler.git) to build the custom images, and copy them to my Proxmox-VE 9 node.
+The `build_all.sh` script uses [distrobuilder](https://github.com/lxc/distrobuilder/) to build the custom images, and copy them to my Proxmox-VE 9 node.
 
 The `test_all.sh` script provisions a modest container for each image to verify functionality.
 
