@@ -11,9 +11,9 @@
 - **Hook Script:** Apply a container hook script to automate `pct push`/`pct exec`. (Tested and working)
 - **This Repo’s Approach:** Modify [lxc-ci](https://github.com/lxc/lxc-ci/) build definitions (e.g., `ubuntu.yaml`) to:
   - Enable `openssh-server`
-  - Create a non-root user
-  - Grant passwordless `sudo`
-  - Prepopulate `authorized_keys` for the non-root user
+  - Create default non-root user (ubuntu, debian, or centos)
+  - Grant passwordless `sudo` for the default user
+  - Prepopulate `authorized_keys` for the default user
 
 **Scripts:**
 
@@ -24,4 +24,4 @@
 
 CentOS 10 is still emerging. As of Proxmox-VE 9.0.6, provisioning a CentOS 10 container will fail. Until official support lands, you can (if you dare) patch `/usr/share/perl5/PVE/LXC/Setup/CentOS.pm` using [this file](https://raw.githubusercontent.com/proxmox/pve-container/refs/heads/master/src/PVE/LXC/Setup/CentOS.pm). This enables CentOS 10 recognition and generates a NetworkManager-compliant config.
 
-⚠️ This patch only affects command-line provisioning via `pct`. Terraform support will require downstream updates to its Proxmox provider.
+⚠️ This patch only affects command-line provisioning via `pct`. Terraform/Ansible(?) support will require downstream updates to its Proxmox provider.

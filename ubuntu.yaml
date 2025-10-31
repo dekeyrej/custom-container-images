@@ -311,6 +311,26 @@ targets:
         lxc.arch = {{ image.architecture_personality }}
 
 files:
+# allow ubuntu to sudo with no password
+- path: /etc/sudoers.d/90-sudo-nopasswd
+  generator: dump
+  mode: 0440
+  content: |-
+    # User rules for ubuntu
+    ubuntu ALL=(ALL) NOPASSWD:ALL
+  variants:
+    - default
+
+# add authorized_keys for hosts to ssh in as ubuntu
+- path: /home/ubuntu/.ssh/authorized_keys
+  generator: copy
+  source: authorized_keys
+  mode: 0600
+  uid: 1000
+  gid: 1000
+  variants:
+  - default
+
 - path: /etc/hostname
   generator: hostname
 
@@ -555,6 +575,19 @@ packages:
     - riscv64
 
 actions:
+# add sudo group and ubuntu user
+- trigger: post-update
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Create sudo group
+    getent group sudo >/dev/null 2>&1 || groupadd --system sudo
+    # Create the ubuntu user account
+    useradd --create-home -s /bin/bash -G sudo -U ubuntu
+  variants:
+  - default
+
 - trigger: post-unpack
   action: |-
     #!/bin/sh
@@ -573,17 +606,6 @@ actions:
     # Remove the immutable flag.
     [ ! -d /run/systemd ] && exit 0
     chattr -i /run/systemd
-
-- trigger: post-update
-  action: |-
-    #!/bin/sh
-    set -eux
-
-    # Create the ubuntu user account
-    getent group sudo >/dev/null 2>&1 || groupadd --system sudo
-    useradd --create-home -s /bin/bash -G sudo -U ubuntu
-  variants:
-  - default
 
 - trigger: post-packages
   action: |-

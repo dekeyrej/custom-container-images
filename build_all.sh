@@ -19,8 +19,9 @@ build_image() {
   mv $distro/$release/rootfs.tar.xz $distro-$release-latest-custom.tar.xz
   rm -rf $distro
   echo "✅ Finished $distro:$release"
-  scp -i /home/ubuntu/.ssh/id_rsa $distro-$release-latest-custom.tar.xz \
-                                  root@$pvenode:/var/lib/vz/template/cache/
+  scp -i /home/ubuntu/.ssh/id_rsa \
+      $distro-$release-latest-custom.tar.xz \
+      root@$pvenode:/var/lib/vz/template/cache/
 }
 
 build_centos_image() {
@@ -43,8 +44,9 @@ build_centos_image() {
   mv $distro/$release/rootfs.tar.xz $distro-$release-stream-latest-custom.tar.xz
   rm -rf $distro
   echo "✅ Finished $distro:$release-Stream"
-  scp -i /home/ubuntu/.ssh/id_rsa $distro-$release-stream-latest-custom.tar.xz \
-                                  root@$pvenode:/var/lib/vz/template/cache/
+  scp -i /home/ubuntu/.ssh/id_rsa \
+      $distro-$release-stream-latest-custom.tar.xz \
+      root@$pvenode:/var/lib/vz/template/cache/
 }
 
 # Ubuntu builds

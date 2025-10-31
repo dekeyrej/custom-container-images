@@ -232,18 +232,18 @@ targets:
         lxc.arch = {{ image.architecture_kernel }}
 
 files:
-# allow ubuntu to sudo without password
-- path: /etc/sudoers.d/90-ubuntu
+# allow centos to sudo without password
+- path: /etc/sudoers.d/90-sudo-nopasswd
   generator: dump
   mode: 0440
   content: |-
-    # User rules for ubuntu
-    ubuntu ALL=(ALL) NOPASSWD:ALL
+    # User rules for centos
+    centos ALL=(ALL) NOPASSWD:ALL
   variants:
     - default
 
-# allow key-based ssh login as ubuntu
-- path: /home/ubuntu/.ssh/authorized_keys
+# allow key-based ssh login as centos
+- path: /home/centos/.ssh/authorized_keys
   generator: copy
   source: authorized_keys  # or any file with public keys
   mode: 0600
@@ -684,7 +684,7 @@ packages:
     action: remove
 
 actions:
-# create sudo group and ubuntu user
+# create sudo group and centos user
 - trigger: post-update
   action: |-
     #!/bin/sh
@@ -692,8 +692,8 @@ actions:
 
     # Create the sudo usergroup
     getent group sudo >/dev/null 2>&1 || groupadd --system sudo
-    # Create the ubuntu user account
-    useradd --create-home -s /bin/bash -G sudo -U ubuntu
+    # Create the centos user account
+    useradd --create-home -s /bin/bash -G sudo -U centos
   variants:
   - default
 

@@ -979,18 +979,18 @@ targets:
         lxc.arch = {{ image.architecture_personality }}
 
 files:
-# allow ubuntu to sudo with no password
-- path: /etc/sudoers.d/90-incus
+# allow debian to sudo with no password
+- path: /etc/sudoers.d/90-sudo-nopasswd
   generator: dump
   mode: 0440
   content: |-
-    # User rules for ubuntu
-    ubuntu ALL=(ALL) NOPASSWD:ALL
+    # User rules for debian
+    debian ALL=(ALL) NOPASSWD:ALL
   variants:
     - default
 
-# add authorized_keys for hosts to ssh in as ubuntu
-- path: /home/ubuntu/.ssh/authorized_keys
+# add authorized_keys for hosts to ssh in as debian
+- path: /home/debian/.ssh/authorized_keys
   generator: copy
   source: authorized_keys
   mode: 0600
@@ -1104,6 +1104,7 @@ files:
   types:
   - vm
 
+# JSD add ifupdown to fix network config with Proxmox-VE 9
 packages:
   manager: apt
   update: true
@@ -1119,7 +1120,7 @@ packages:
     - netbase
     - net-tools
     - openssh-client
-    - ifupdown        # added to make Peoxmox-VE 9 happy
+    - ifupdown        # added to make Proxmox-VE 9 happy
     - openssh-server  # allow ssh _in_
     - python3-debian  # allow ansible management
     - procps
@@ -1235,15 +1236,15 @@ packages:
       {% if image.release != "sid" %}deb http://deb.debian.org/debian-security/ {{ image.release }}-security main contrib{% endif %}
 
 actions:
-# create ubuntu user
+# create debian user
 - trigger: post-update
   action: |-
     #!/bin/sh
     set -eux
 
-    # Create the ubuntu user account
+    # Create the debian user account
     getent group sudo >/dev/null 2>&1 || groupadd --system sudo
-    useradd --create-home -s /bin/bash -G sudo -U ubuntu
+    useradd --create-home -s /bin/bash -G sudo -U debian
   variants:
   - default
 
