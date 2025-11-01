@@ -50,7 +50,7 @@ build_centos_image() {
 }
 
 # Ubuntu builds
-for release in noble plucky; do
+for release in noble questing; do
   build_image ubuntu $release
 done
 

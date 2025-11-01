@@ -23,7 +23,7 @@ build_container() {
 }
 
 build_container 200 "ubuntu-noble-latest-custom.tar.xz"     "ubuntu" "pippin"  "192.168.86.92"  "Shire"
-build_container 201 "ubuntu-plucky-latest-custom.tar.xz"    "ubuntu" "merry"   "192.168.86.93"  "Shire"
+build_container 201 "ubuntu-questing-latest-custom.tar.xz"  "ubuntu" "merry"   "192.168.86.93"  "Shire"
 build_container 202 "debian-bookworm-latest-custom.tar.xz"  "debian" "boromir" "192.168.86.96"  "Gondor"
 build_container 203 "debian-trixie-latest-custom.tar.xz"    "debian" "faramir" "192.168.86.97"  "Gondor"
 build_container 204 "centos-9-stream-latest-custom.tar.xz"  "centos" "eomer"   "192.168.86.101" "Rohan"
