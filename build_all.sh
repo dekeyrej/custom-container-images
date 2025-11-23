@@ -5,6 +5,11 @@ build_image() {
   local distro=$1
   local release=$2
 
+  if [[ ! -f authorized_keys ]]; then
+    echo "authorized_keys not found!"
+    exit 1
+  fi
+
   echo "🔧 Building $distro:$release..."
   distrobuilder build-lxc $distro.yaml ./$distro/$release \
     -o image.architecture=amd64 \
@@ -27,6 +32,11 @@ build_image() {
 build_centos_image() {
   local distro=$1
   local release=$2
+
+  if [[ ! -f authorized_keys ]]; then
+    echo "authorized_keys not found!"
+    exit 1
+  fi
 
   echo "🔧 Building $distro:$release-Stream..."
   distrobuilder build-lxc $distro.yaml ./$distro/$release \
