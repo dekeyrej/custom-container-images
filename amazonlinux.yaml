@@ -1,0 +1,106 @@
+image:
+  distribution: amazonlinux
+
+# source:
+#   downloader: rootfs-http
+#   url: https://cdn.amazonlinux.com/os-images/{{ image.release }}/{% if image.architecture == "aarch64" %}container-arm64{% else %}container{% endif %}/amzn2-container-raw-{{ image.release }}-{% if image.architecture == "aarch64" %}arm64{% else %}{{ image.architecture }}{% endif %}.tar.xz
+
+source:
+  downloader: rootfs-http
+  url: file:///home/ubuntu/repos/custom-container-images/al2023-container-2023.10.20260105.0-x86_64.tar.xz
+
+targets:
+  lxc:
+    create_message: |
+      You just created a {{ image.description }} container.
+    config:
+    - type: all
+      before: 5
+      content: |-
+        lxc.include = LXC_TEMPLATE_CONFIG/rocky.common.conf
+    - type: user
+      before: 5
+      content: |-
+        lxc.include = LXC_TEMPLATE_CONFIG/rocky.userns.conf
+    - type: all
+      after: 4
+      content: |-
+        lxc.include = LXC_TEMPLATE_CONFIG/common.conf
+    - type: user
+      after: 4
+      content: |-
+        lxc.include = LXC_TEMPLATE_CONFIG/userns.conf
+    - type: all
+      content: |-
+        lxc.arch = {{ image.architecture_kernel }}
+
+files:
+- name: hostname
+  path: /etc/hostname
+  generator: hostname
+
+- name: hosts
+  path: /etc/hosts
+  generator: hosts
+
+- path: /etc/machine-id
+  generator: dump
+  content: uninitialized
+
+- path: /var/lib/dbus/machine-id
+  generator: remove
+
+- name: eth0.network
+  path: /etc/systemd/network/eth0.network
+  generator: dump
+  content: |-
+    [Match]
+    Name=eth0
+
+    [Network]
+    DHCP=ipv4
+
+    [DHCPv4]
+    UseDomains=true
+    UseMTU=true
+
+    [DHCP]
+    ClientIdentifier=mac
+- path: /etc/fstab
+  generator: dump
+
+packages:
+  manager: yum
+  update: true
+  cleanup: true
+  sets:
+  - packages:
+    - iproute
+    - sudo
+    - systemd
+    - systemd-networkd
+    - systemd-resolved
+    - systemd-udev
+    - openssh-server    # the one change I need
+    action: install
+
+actions:
+- trigger: post-unpack
+  action: |-
+    #!/bin/sh
+    # Make sure we have our template targets
+    touch /etc/hosts
+    touch /etc/hostname
+
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    umount -l /etc/resolv.conf || true
+    rm /etc/resolv.conf
+    ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+    cp -R /etc/skel/.bash* /root/
+
+    systemctl enable systemd-resolved
+    systemctl enable systemd-networkd
+
+    rm -rf /var/cache/yum
