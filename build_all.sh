@@ -106,25 +106,25 @@ build_centos_image() {
       root@$pvenode:/var/lib/vz/template/cache/
 }
 
-# Ubuntu builds
+# Ubuntu builds - creates ubuntu user
 for release in noble questing; do
   build_image ubuntu $release amd64
 done
 
-# Debian builds
+# Debian builds - creates debian user
 for release in bookworm trixie; do
   build_image debian $release amd64
 done
 
-# CentOS builds
+# CentOS builds - creates centos user
 for release in 9 10; do
   build_centos_image centos $release x86_64
 done
 
-# Rocky Linux builds
+# Rocky Linux builds - does not create rocky user yet
 for release in 9 10; do
   build_image rockylinux $release x86_64
 done
 
-# Amazon Linux 2023 build
+# Amazon Linux 2023 build - does not create ec2-user yet
 build_amazon_image amazonlinux 2023

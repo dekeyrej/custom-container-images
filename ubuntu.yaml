@@ -441,15 +441,6 @@ files:
   types:
   - vm
 
-- path: /home/ubuntu/.ssh/authorized_keys
-  generator: copy
-  source: authorized_keys
-  mode: 0600
-  uid: 1000
-  gid: 1000
-  variants:
-  - default
-
 packages:
   manager: apt
   update: true
@@ -500,6 +491,12 @@ packages:
     releases:
     - noble
     - plucky
+    - questing
+
+  - packages:
+    - systemd-timesyncd
+    action: install
+    releases:
     - questing
 
   - packages:
@@ -577,19 +574,6 @@ packages:
     - riscv64
 
 actions:
-# add sudo group and ubuntu user
-- trigger: post-update
-  action: |-
-    #!/bin/sh
-    set -eux
-
-    # Create sudo group
-    getent group sudo >/dev/null 2>&1 || groupadd --system sudo
-    # Create the ubuntu user account
-    useradd --create-home -s /bin/bash -G sudo -U ubuntu
-  variants:
-  - default
-
 - trigger: post-unpack
   action: |-
     #!/bin/sh
@@ -608,6 +592,17 @@ actions:
     # Remove the immutable flag.
     [ ! -d /run/systemd ] && exit 0
     chattr -i /run/systemd
+
+- trigger: post-update
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Create the ubuntu user account
+    getent group sudo >/dev/null 2>&1 || groupadd --system sudo
+    useradd --create-home -s /bin/bash -G sudo -U ubuntu
+  variants:
+  - default
 
 - trigger: post-packages
   action: |-
