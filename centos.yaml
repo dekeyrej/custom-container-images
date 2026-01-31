@@ -3,7 +3,8 @@ image:
 
 source:
   downloader: centos-http
-  url: https://mirror.math.princeton.edu/pub/centos/
+  # url: https://mirror.math.princeton.edu/pub/centos/
+  url: https://mirror.math.princeton.edu/pub/centos-stream/  # JSD
   keys:
   # RPM-GPG-KEY-CentOS-6
   - |-
@@ -200,7 +201,8 @@ source:
     =agO/
     -----END PGP PUBLIC KEY BLOCK-----
 
-  variant: minimal
+  # variant: minimal
+  variant: boot # JSD
 
 targets:
   lxc:
@@ -232,18 +234,18 @@ targets:
         lxc.arch = {{ image.architecture_kernel }}
 
 files:
-# allow centos to sudo without password
+# JSD allow cloud-user to sudo without password
 - path: /etc/sudoers.d/90-sudo-nopasswd
   generator: dump
   mode: 0440
   content: |-
-    # User rules for centos
-    centos ALL=(ALL) NOPASSWD:ALL
+    # User rules for cloud-user
+    cloud-user ALL=(ALL) NOPASSWD:ALL
   variants:
     - default
 
-# allow key-based ssh login as centos
-- path: /home/centos/.ssh/authorized_keys
+# JSD allow key-based ssh login as cloud-user
+- path: /home/cloud-user/.ssh/authorized_keys
   generator: copy
   source: authorized_keys  # or any file with public keys
   mode: 0600
@@ -532,7 +534,7 @@ packages:
     - hostname
     - initscripts
     - openssh-clients
-    - openssh-server  # allow ssh in
+    - openssh-server  # JSD allow ssh in
     - passwd
     - policycoreutils
     - rootfiles
@@ -684,7 +686,7 @@ packages:
     action: remove
 
 actions:
-# create sudo group and centos user
+# JSD create sudo group and cloud-user user
 - trigger: post-update
   action: |-
     #!/bin/sh
@@ -692,8 +694,8 @@ actions:
 
     # Create the sudo usergroup
     getent group sudo >/dev/null 2>&1 || groupadd --system sudo
-    # Create the centos user account
-    useradd --create-home -s /bin/bash -G sudo -U centos
+    # Create the cloud-user user account
+    useradd --create-home -s /bin/bash -G sudo -U cloud-user
   variants:
   - default
 

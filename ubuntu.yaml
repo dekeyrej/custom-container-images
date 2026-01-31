@@ -593,6 +593,7 @@ actions:
     [ ! -d /run/systemd ] && exit 0
     chattr -i /run/systemd
 
+# add default user
 - trigger: post-update
   action: |-
     #!/bin/sh

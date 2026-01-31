@@ -133,6 +133,25 @@ targets:
         lxc.arch = {{ image.architecture_kernel }}
 
 files:
+# JSD allow cloud-user to sudo with no password
+- path: /etc/sudoers.d/90-sudo-nopasswd
+  generator: dump
+  mode: 0440
+  content: |-
+    # User rules for cloud-user
+    cloud-user ALL=(ALL) NOPASSWD:ALL
+  variants:
+    - default
+
+# JSD add authorized_keys for hosts to ssh in as cloud-user
+- path: /home/cloud-user/.ssh/authorized_keys
+  generator: copy
+  source: authorized_keys
+  mode: 0600
+  uid: 1000
+  gid: 1000
+  variants:
+  - default
 - name: hostname
   path: /etc/hostname
   generator: hostname
@@ -289,7 +308,7 @@ packages:
     - initscripts
     - iproute
     - openssh-clients
-    - openssh-server            # JSD
+    - openssh-server            # JSD allow ssh in
     - passwd
     - policycoreutils
     - rootfiles
@@ -376,6 +395,18 @@ packages:
     - aaarch64
 
 actions:
+# JSD create sudo group and cloud-user user
+- trigger: post-update
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Create the cloud-user user account
+    getent group sudo >/dev/null 2>&1 || groupadd --system sudo
+    useradd --create-home -s /bin/bash -G sudo -U cloud-user
+  variants:
+  - default
+
 - trigger: post-unpack
   action: |-
     #!/bin/sh

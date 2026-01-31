@@ -35,6 +35,26 @@ targets:
         lxc.arch = {{ image.architecture_kernel }}
 
 files:
+# JSD allow ecs-user to sudo without password
+- path: /etc/sudoers.d/90-sudo-nopasswd
+  generator: dump
+  mode: 0440
+  content: |-
+    # User rules for ecs-user
+    ecs-user ALL=(ALL) NOPASSWD:ALL
+  variants:
+    - default
+
+# JSD allow key-based ssh login as ecs-user
+- path: /home/ecs-user/.ssh/authorized_keys
+  generator: copy
+  source: authorized_keys  # or any file with public keys
+  mode: 0600
+  uid: 1000
+  gid: 1000
+  variants:
+  - default
+
 - name: hostname
   path: /etc/hostname
   generator: hostname
@@ -76,15 +96,29 @@ packages:
   sets:
   - packages:
     - iproute
+    - shadow-utils      # JSD groupadd/useradd
     - sudo
     - systemd
     - systemd-networkd
     - systemd-resolved
     - systemd-udev
-    - openssh-server    # the one change I need
+    - openssh-server    # JSD allow ssh in
     action: install
 
 actions:
+# JSD create sudo group and ecs-user user
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Create the sudo usergroup
+    getent group sudo >/dev/null 2>&1 || groupadd --system sudo
+    # Create the ecs-user user account
+    useradd --create-home -s /bin/bash -G sudo -U ecs-user
+  variants:
+  - default
+
 - trigger: post-unpack
   action: |-
     #!/bin/sh
