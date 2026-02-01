@@ -42,7 +42,7 @@ build_image() {
     extra_opts+=(-o source.url="file://$PWD/$TARBALL")
   fi
 
-  distrobuilder build-lxc "$distro.yaml" "./$distro/$release" \
+  distrobuilder build-lxc "definitions/$distro.yaml" "./$distro/$release" \
     -o image.architecture="$arch" \
     -o image.release="$release" \
     -o image.variant=default \
@@ -88,3 +88,5 @@ done
 
 # Amazon Linux 2023 build - creates ecs-user
 build_image amazonlinux 2023 x86_64
+
+echo "Custom Container Build Complete - $(date)" >> container_log.txt
