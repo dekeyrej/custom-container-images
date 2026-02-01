@@ -11,17 +11,22 @@
 - **Hook Script:** Apply a container hook script to automate `pct push`/`pct exec`. (Tested and working)
 - **This Repo’s Approach:** Modify [lxc-ci](https://github.com/lxc/lxc-ci/) build definitions (e.g., `ubuntu.yaml`) to:
   - Enable `openssh-server`
-  - Create default non-root user (ubuntu, debian, or centos)
+  - Create default non-root user (ubuntu, debian, cloud-user, or ecs-user)
   - Grant passwordless `sudo` for the default user
   - Prepopulate `authorized_keys` for the default user
 
 **Scripts:**
 
-- `build_all.sh`: Uses [distrobuilder](https://github.com/lxc/distrobuilder/) to build custom images and copy them to the Proxmox-VE 9 node.
+- `build_all.sh`: Uses [distrobuilder - **Must** build from source!](https://github.com/lxc/distrobuilder/) to build custom images and copy them to the Proxmox-VE 9 node.
 - `test_all.sh`: Provisions a container for each image to verify functionality.
 
-**Note on CentOS 10:**
+**Note on AmazonLinux 2023:**
 
-CentOS 10 is still emerging. As of Proxmox-VE 9.0.6, provisioning a CentOS 10 container will fail. Until official support lands, you can (if you dare) patch `/usr/share/perl5/PVE/LXC/Setup/CentOS.pm` using [this file](https://raw.githubusercontent.com/proxmox/pve-container/refs/heads/master/src/PVE/LXC/Setup/CentOS.pm). This enables CentOS 10 recognition and generates a NetworkManager-compliant config.
+AmazonLinux 2023 containers are not supported by default. Provisioning an AmazonLinux 2023 container will fail. Until official support lands, you can (if you dare) patch:
+- `/usr/share/perl5/PVE/LXC/Config.pm` -- one word to add (search for amazon in the local file to see where)
+- `/usr/share/perl5/PVE/LXC/Setup.pm`  -- 6 new lines to add (search for amazon in the local file to see where)
+- `/usr/share/perl5/PVE/LXC/Setup/Amazon.pm` -- new file
 
-⚠️ This patch only affects command-line provisioning via `pct`. Terraform/Ansible(?) support will require downstream updates to its Proxmox provider.
+Using the files in this repository. This enables amazonlinux-2023 recognition and generates a NetworkManager-compliant config.
+
+⚠️ This patch only affects command-line provisioning via `pct`.
