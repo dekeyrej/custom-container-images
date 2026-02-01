@@ -1,13 +1,13 @@
 image:
   distribution: amazonlinux
 
+source:  
+  downloader: rootfs-http
+  # JSD url: https://cdn.amazonlinux.com/os-images/{{ image.release }}/{% if image.architecture == "aarch64" %}container-arm64{% else %}container{% endif %}/amzn2-container-raw-{{ image.release }}-{% if image.architecture == "aarch64" %}arm64{% else %}{{ image.architecture }}{% endif %}.tar.xz
+
 # source:
 #   downloader: rootfs-http
-#   url: https://cdn.amazonlinux.com/os-images/{{ image.release }}/{% if image.architecture == "aarch64" %}container-arm64{% else %}container{% endif %}/amzn2-container-raw-{{ image.release }}-{% if image.architecture == "aarch64" %}arm64{% else %}{{ image.architecture }}{% endif %}.tar.xz
-
-source:
-  downloader: rootfs-http
-  url: file:///home/ubuntu/repos/custom-container-images/al2023-container-2023.10.20260105.0-x86_64.tar.xz
+#   url: file:///home/ubuntu/repos/custom-container-images/al2023-container-2023.10.20260105.0-x86_64.tar.xz
 
 targets:
   lxc:
@@ -35,7 +35,7 @@ targets:
         lxc.arch = {{ image.architecture_kernel }}
 
 files:
-# JSD allow ecs-user to sudo without password
+# allow ecs-user to sudo without password JSD
 - path: /etc/sudoers.d/90-sudo-nopasswd
   generator: dump
   mode: 0440
@@ -45,7 +45,7 @@ files:
   variants:
     - default
 
-# JSD allow key-based ssh login as ecs-user
+# allow key-based ssh login as ecs-user JSD
 - path: /home/ecs-user/.ssh/authorized_keys
   generator: copy
   source: authorized_keys  # or any file with public keys
@@ -96,17 +96,17 @@ packages:
   sets:
   - packages:
     - iproute
-    - shadow-utils      # JSD groupadd/useradd
+    - shadow-utils      # groupadd/useradd JSD
     - sudo
     - systemd
     - systemd-networkd
     - systemd-resolved
     - systemd-udev
-    - openssh-server    # JSD allow ssh in
+    - openssh-server    # allow ssh in JSD
     action: install
 
 actions:
-# JSD create sudo group and ecs-user user
+# create sudo group and ecs-user user JSD
 - trigger: post-packages
   action: |-
     #!/bin/sh

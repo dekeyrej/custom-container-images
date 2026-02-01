@@ -1,0 +1,65 @@
+source:
+  downloader: rockylinux-http
+  # url: https://download.rockylinux.org/pub/rocky/  JSD this one is SLOW
+  url: https://mirror.cs.vt.edu/pub/rocky  # JSD
+
+files:
+# allow cloud-user to sudo with no password JSD
+- path: /etc/sudoers.d/90-sudo-nopasswd
+  generator: dump
+  mode: 0440
+  content: |-
+    # User rules for cloud-user
+    cloud-user ALL=(ALL) NOPASSWD:ALL
+  variants:
+    - default
+
+# add authorized_keys for hosts to ssh in as cloud-user JSD
+- path: /home/cloud-user/.ssh/authorized_keys
+  generator: copy
+  source: authorized_keys
+  mode: 0600
+  uid: 1000
+  gid: 1000
+  variants:
+  - default
+- name: hostname
+  path: /etc/hostname
+  generator: hostname
+
+packages:
+  manager: yum
+  update: true
+  cleanup: true
+  sets:
+  - packages:
+    - cronie
+    - cronie-noanacron
+    - curl
+    - glibc-langpack-en
+    - glibc-locale-source
+    - hostname
+    - initscripts
+    - iproute
+    - openssh-clients
+    - openssh-server            # allow ssh in JSD
+    - passwd
+    - policycoreutils
+    - rootfiles
+    - rsyslog
+    - sudo
+    - vim-minimal
+    action: install
+
+actions:
+# create sudo group and cloud-user user JSD
+- trigger: post-update
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Create the cloud-user user account
+    getent group sudo >/dev/null 2>&1 || groupadd --system sudo
+    useradd --create-home -s /bin/bash -G sudo -U cloud-user
+  variants:
+  - default

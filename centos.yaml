@@ -201,7 +201,7 @@ source:
     =agO/
     -----END PGP PUBLIC KEY BLOCK-----
 
-  # variant: minimal
+  # variant: minimal JSD
   variant: boot # JSD
 
 targets:
@@ -234,7 +234,7 @@ targets:
         lxc.arch = {{ image.architecture_kernel }}
 
 files:
-# JSD allow cloud-user to sudo without password
+# allow cloud-user to sudo without password JSD
 - path: /etc/sudoers.d/90-sudo-nopasswd
   generator: dump
   mode: 0440
@@ -244,7 +244,7 @@ files:
   variants:
     - default
 
-# JSD allow key-based ssh login as cloud-user
+# allow key-based ssh login as cloud-user JSD
 - path: /home/cloud-user/.ssh/authorized_keys
   generator: copy
   source: authorized_keys  # or any file with public keys
@@ -534,7 +534,7 @@ packages:
     - hostname
     - initscripts
     - openssh-clients
-    - openssh-server  # JSD allow ssh in
+    - openssh-server  # allow ssh in JSD
     - passwd
     - policycoreutils
     - rootfiles
@@ -686,7 +686,7 @@ packages:
     action: remove
 
 actions:
-# JSD create sudo group and cloud-user user
+# create sudo group and cloud-user user JSD
 - trigger: post-update
   action: |-
     #!/bin/sh

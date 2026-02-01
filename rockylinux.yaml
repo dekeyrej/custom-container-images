@@ -3,7 +3,8 @@ image:
 
 source:
   downloader: rockylinux-http
-  url: https://download.rockylinux.org/pub/rocky/
+  # url: https://download.rockylinux.org/pub/rocky/  JSD
+  url: https://mirror.cs.vt.edu/pub/rocky  # JSD
   keys:
   # RPM-GPG-KEY-rockylinux-8
   - |-
@@ -133,7 +134,7 @@ targets:
         lxc.arch = {{ image.architecture_kernel }}
 
 files:
-# JSD allow cloud-user to sudo with no password
+# allow cloud-user to sudo with no password JSD
 - path: /etc/sudoers.d/90-sudo-nopasswd
   generator: dump
   mode: 0440
@@ -143,7 +144,7 @@ files:
   variants:
     - default
 
-# JSD add authorized_keys for hosts to ssh in as cloud-user
+# add authorized_keys for hosts to ssh in as cloud-user JSD
 - path: /home/cloud-user/.ssh/authorized_keys
   generator: copy
   source: authorized_keys
@@ -308,7 +309,7 @@ packages:
     - initscripts
     - iproute
     - openssh-clients
-    - openssh-server            # JSD allow ssh in
+    - openssh-server            # allow ssh in JSD
     - passwd
     - policycoreutils
     - rootfiles
@@ -395,7 +396,7 @@ packages:
     - aaarch64
 
 actions:
-# JSD create sudo group and cloud-user user
+# create sudo group and cloud-user user JSD
 - trigger: post-update
   action: |-
     #!/bin/sh

@@ -979,7 +979,7 @@ targets:
         lxc.arch = {{ image.architecture_personality }}
 
 files:
-# allow debian to sudo with no password
+# allow debian to sudo with no password JSD
 - path: /etc/sudoers.d/90-sudo-nopasswd
   generator: dump
   mode: 0440
@@ -989,7 +989,7 @@ files:
   variants:
     - default
 
-# add authorized_keys for hosts to ssh in as debian
+# add authorized_keys for hosts to ssh in as debian JSD
 - path: /home/debian/.ssh/authorized_keys
   generator: copy
   source: authorized_keys
@@ -1104,7 +1104,6 @@ files:
   types:
   - vm
 
-# JSD add ifupdown to fix network config with Proxmox-VE 9
 packages:
   manager: apt
   update: true
@@ -1120,9 +1119,9 @@ packages:
     - netbase
     - net-tools
     - openssh-client
-    - ifupdown        # added to make Proxmox-VE 9 happy
-    - openssh-server  # allow ssh _in_
-    - python3-debian  # allow ansible management
+    - ifupdown        # added to make Proxmox-VE 9 happy JSD
+    - openssh-server  # allow ssh _in_ JSD
+    - python3-debian  # allow ansible management JSD
     - procps
     - sudo
     - vim
@@ -1244,7 +1243,7 @@ packages:
       {% if image.release != "sid" %}deb http://deb.debian.org/debian-security/ {{ image.release }}-security main contrib{% endif %}
 
 actions:
-# create debian user
+# create debian user JSD
 - trigger: post-update
   action: |-
     #!/bin/sh

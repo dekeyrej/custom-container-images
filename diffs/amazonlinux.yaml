@@ -1,0 +1,54 @@
+source:  
+  downloader: rootfs-http
+  # JSD url: https://cdn.amazonlinux.com/os-images/{{ image.release }}/{% if image.architecture == "aarch64" %}container-arm64{% else %}container{% endif %}/amzn2-container-raw-{{ image.release }}-{% if image.architecture == "aarch64" %}arm64{% else %}{{ image.architecture }}{% endif %}.tar.xz
+
+files:
+# allow ecs-user to sudo without password JSD
+- path: /etc/sudoers.d/90-sudo-nopasswd
+  generator: dump
+  mode: 0440
+  content: |-
+    # User rules for ecs-user
+    ecs-user ALL=(ALL) NOPASSWD:ALL
+  variants:
+    - default
+
+# allow key-based ssh login as ecs-user JSD
+- path: /home/ecs-user/.ssh/authorized_keys
+  generator: copy
+  source: authorized_keys  # or any file with public keys
+  mode: 0600
+  uid: 1000
+  gid: 1000
+  variants:
+  - default
+
+packages:
+  manager: yum
+  update: true
+  cleanup: true
+  sets:
+  - packages:
+    - iproute
+    - shadow-utils      # groupadd/useradd JSD
+    - sudo
+    - systemd
+    - systemd-networkd
+    - systemd-resolved
+    - systemd-udev
+    - openssh-server    # allow ssh in JSD
+    action: install
+
+actions:
+# create sudo group and ecs-user user JSD
+- trigger: post-packages
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Create the sudo usergroup
+    getent group sudo >/dev/null 2>&1 || groupadd --system sudo
+    # Create the ecs-user user account
+    useradd --create-home -s /bin/bash -G sudo -U ecs-user
+  variants:
+  - default

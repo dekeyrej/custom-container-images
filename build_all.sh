@@ -3,6 +3,8 @@ set -euo pipefail
 pvenode=iluvatar
 ct_image_dir="/mnt/ssd_backup/template/cache/"
 
+echo "Custom Container Build Log - $(date)" > container_log.txt
+
 amazon_tarball() {
   local arch=$1
 
@@ -48,6 +50,7 @@ build_image() {
 
   if [[ $? -ne 0 ]]; then
     echo "❌ Build failed for $distro:$release"
+    echo "❌ Build failed for $distro:$release at $(date)" >> container_log.txt
     exit 1
   fi
 
@@ -57,6 +60,7 @@ build_image() {
   mv "$distro/$release/rootfs.tar.xz" "$distro-$release-latest-custom.tar.xz"
   rm -rf "$distro"
   echo "✅ Finished $distro:$release"
+  echo "✅ Finished $distro:$release at $(date)" >> container_log.txt
   scp -i /home/ubuntu/.ssh/id_rsa \
       "$distro-$release-latest-custom.tar.xz" \
       root@$pvenode:$ct_image_dir

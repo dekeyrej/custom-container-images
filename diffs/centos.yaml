@@ -1,0 +1,62 @@
+source:
+  downloader: centos-http
+  # url: https://mirror.math.princeton.edu/pub/centos/ JSD
+  url: https://mirror.math.princeton.edu/pub/centos-stream/  # JSD
+  # variant: minimal JSD
+  variant: boot # JSD
+
+files:
+# allow cloud-user to sudo without password JSD
+- path: /etc/sudoers.d/90-sudo-nopasswd
+  generator: dump
+  mode: 0440
+  content: |-
+    # User rules for cloud-user
+    cloud-user ALL=(ALL) NOPASSWD:ALL
+  variants:
+    - default
+
+# allow key-based ssh login as cloud-user JSD
+- path: /home/cloud-user/.ssh/authorized_keys
+  generator: copy
+  source: authorized_keys  # or any file with public keys
+  mode: 0600
+  uid: 1000
+  gid: 1000
+  variants:
+  - default
+
+packages:
+  manager: dnf
+  update: true
+  cleanup: true
+  sets:
+  - packages:
+    - cronie
+    - curl
+    - glibc-langpack-en
+    - hostname
+    - initscripts
+    - openssh-clients
+    - openssh-server  # allow ssh in JSD
+    - passwd
+    - policycoreutils
+    - rootfiles
+    - sudo
+    - rsyslog
+    - vim-minimal
+    action: install
+
+actions:
+# create sudo group and cloud-user user JSD
+- trigger: post-update
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Create the sudo usergroup
+    getent group sudo >/dev/null 2>&1 || groupadd --system sudo
+    # Create the cloud-user user account
+    useradd --create-home -s /bin/bash -G sudo -U cloud-user
+  variants:
+  - default

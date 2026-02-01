@@ -20,13 +20,72 @@
 - `build_all.sh`: Uses [distrobuilder - **Must** build from source!](https://github.com/lxc/distrobuilder/) to build custom images and copy them to the Proxmox-VE 9 node.
 - `test_all.sh`: Provisions a container for each image to verify functionality.
 
+**Edits to YAMLs:**
+
+Generally, the edits consist of adding two blocks under `files`, adding a line (or a couple) under `packages`, and adding one block under `actions` though for Rocky, Amazon, and CentOS there are also edits related to the `source`.  The examples below are from `ubuntu.yaml`.
+
+```yaml
+files:
+# allow ubuntu to sudo with no password JSD
+- path: /etc/sudoers.d/90-sudo-nopasswd
+  generator: dump
+  mode: 0440
+  content: |-
+    # User rules for ubuntu
+    ubuntu ALL=(ALL) NOPASSWD:ALL
+  variants:
+    - default
+
+# add authorized_keys for hosts to ssh in as ubuntu JSD
+- path: /home/ubuntu/.ssh/authorized_keys
+  generator: copy
+  source: authorized_keys
+  mode: 0600
+  uid: 1000
+  gid: 1000
+  variants:
+  - default
+```
+
+```yaml
+packages:
+  manager: apt
+  update: true
+  cleanup: true
+  sets:
+  - packages:
+    - fuse3
+    releases:
+    - jammy
+    - noble
+    - plucky
+    - questing
+    action: install
+
+  - packages:
+    - openssh-client
+    - openssh-server  # allow ssh in JSD
+    - sudo
+    - vim
+    action: install
+```
+
+```yaml
+actions:
+# add default user JSD
+- trigger: post-update
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Create the ubuntu user account
+    getent group sudo >/dev/null 2>&1 || groupadd --system sudo
+    useradd --create-home -s /bin/bash -G sudo -U ubuntu
+  variants:
+  - default
+```
+
+
 **Note on AmazonLinux 2023:**
 
-AmazonLinux 2023 containers are not supported by default. Provisioning an AmazonLinux 2023 container will fail. Until official support lands, you can (if you dare) patch:
-- `/usr/share/perl5/PVE/LXC/Config.pm` -- one word to add (search for amazon in the local file to see where)
-- `/usr/share/perl5/PVE/LXC/Setup.pm`  -- 5 new lines to add (search for amazon in the local file to see where)
-- `/usr/share/perl5/PVE/LXC/Setup/Amazon.pm` -- new file
-
-Using the files in this repository. This enables amazonlinux-2023 recognition and generates a NetworkManager-compliant config.
-
-⚠️ This patch only affects command-line provisioning via `pct`.
+AmazonLinux 2023 containers are not supported by default. Provisioning an AmazonLinux 2023 container will fail. See [PVE.md](proxmox_updates/PVE.md) for a workaround.
