@@ -72,7 +72,7 @@ for release in jammy noble questing; do
 done
 
 # Debian builds - creates debian user
-for release in bookworm trixie; do
+for release in bookworm trixie forky; do
   build_image debian $release amd64
 done
 
