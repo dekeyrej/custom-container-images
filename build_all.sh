@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
-pvenode=iluvatar
-ct_image_dir="/mnt/ssd_backup/template/cache/"
+
+# override with PVENODES="bluep bluep02 bluep03"
+default_nodes="iluvatar"
+pvenodes_str="${PVENODES:-$default_nodes}"
+read -r -a pvenodes <<< "$pvenodes_str"
+
+# override with PHYSICAL_IMAGE_PATH="/mnt/bucket/template/cache/"
+ct_image_dir=${PHYSICAL_IMAGE_PATH:-"/mnt/ssd_backup/template/cache/"}
 
 echo "Custom Container Build Log - $(date)" > container_log.txt
 
@@ -61,30 +67,30 @@ build_image() {
   rm -rf "$distro"
   echo "✅ Finished $distro:$release"
   echo "✅ Finished $distro:$release at $(date)" >> container_log.txt
-  scp -i /home/ubuntu/.ssh/id_rsa \
-      "$distro-$release-latest-custom.tar.xz" \
-      root@$pvenode:$ct_image_dir
+  for h in "${pvenodes[@]}"; do
+      scp -i /home/ubuntu/.ssh/id_rsa \
+          "$distro-$release-latest-custom.tar.xz" \
+          "root@$h:$ct_image_dir"
+  done
 }
 
 # Ubuntu builds - creates ubuntu user
-for release in jammy noble questing; do
-  build_image ubuntu $release amd64
-done
+build_image ubuntu jammy amd64
+build_image ubuntu noble amd64
+build_image ubuntu questing amd64
 
 # Debian builds - creates debian user
-for release in bookworm trixie forky; do
-  build_image debian $release amd64
-done
+build_image debian bookworm amd64
+build_image debian trixie amd64
+build_image debian forky amd64
 
 # Rocky Linux builds - creates cloud-user
-for release in 9 10; do
-  build_image rockylinux $release x86_64
-done
+build_image rockylinux  9 x86_64
+build_image rockylinux 10 x86_64
 
 # CentOS builds - creates cloud-user
-for release in 9-Stream 10-Stream; do
-  build_image centos $release x86_64
-done
+# build_image centos  9-Stream x86_64
+# build_image centos 10-Stream x86_64
 
 # Amazon Linux 2023 build - creates ecs-user
 build_image amazonlinux 2023 x86_64

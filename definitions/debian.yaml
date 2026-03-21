@@ -1075,6 +1075,15 @@ files:
   types:
   - vm
 
+- path: /etc/dracut.conf.d/incus.conf
+  generator: dump
+  content: |-
+    hostonly=no
+  types:
+  - vm
+  releases:
+  - forky
+
 - name: meta-data
   generator: cloud-init
   variants:
@@ -1352,6 +1361,16 @@ actions:
     touch /etc/apparmor.d/local/sbin.dhclient
   releases:
   - trixie
+  - forky
+
+- trigger: post-files
+  action: |-
+    #!/bin/sh
+    set -eux
+    update-initramfs -u
+  types:
+  - vm
+  releases:
   - forky
 
 - trigger: post-files
