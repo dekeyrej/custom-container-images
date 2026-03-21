@@ -88,7 +88,11 @@ cd custom-container-images
 
 cp ~/.ssh/id_rsa.pub authorized_keys
 
-# Edit pvenode=node and ct_image_dir="/var/lib/vz/template/cache/" in build_all.sh
+# scp destinations for custom images
+export PVENODES="iluvatar"                    
+# physical path on the node(s) where lxc templates are stored
+export PHYSICAL_IMAGE_PATH="/mnt/ssd_backup/template/cache"   
+
 sudo ./build_all.sh
 ```
 
