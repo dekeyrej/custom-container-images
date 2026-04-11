@@ -63,9 +63,9 @@ Terraform → pct create → Custom LXC Image → SSH-ready non-root user → An
 
 | Distro | Status | Notes |
 |--------|--------|-------|
-| Ubuntu (jammy, noble, questing) | ✅ Working | user: `ubuntu` |
-| Debian (bookworm, trixie) | ✅ Working | user: `debian` |
-| CentOS Stream (9, 10) | ✅ Working | user: `cloud-user` |
+| Ubuntu (jammy, noble, questing, resolute) | ✅ Working | user: `ubuntu` |
+| Debian (bookworm, trixie, forky) | ✅ Working | user: `debian` |
+| CentOS Stream (9, 10) | ✅ Working, Deprecated | user: `cloud-user` |
 | Rocky Linux (9, 10) | ✅ Working | user: `cloud-user` |
 | Amazon Linux 2023 | ✅ Working* | user: `ecs-user`<br>See: [PVE.md](proxmox_updates/PVE.md) for workaround |
 
@@ -91,7 +91,10 @@ cp ~/.ssh/id_rsa.pub authorized_keys
 # scp destinations for custom images
 export PVENODES="iluvatar"                    
 # physical path on the node(s) where lxc templates are stored
-export PHYSICAL_IMAGE_PATH="/mnt/ssd_backup/template/cache"   
+export PHYSICAL_IMAGE_PATH="/mnt/ssd_backup/template/cache"
+
+# Add the following line to /etc/sudoers:
+Defaults:%sudo env_keep += "PVENODES PHYSICAL_IMAGE_PATH"
 
 sudo ./build_all.sh
 ```

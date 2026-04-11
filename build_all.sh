@@ -9,7 +9,7 @@ read -r -a pvenodes <<< "$pvenodes_str"
 # override with PHYSICAL_IMAGE_PATH="/mnt/bucket/template/cache/"
 ct_image_dir=${PHYSICAL_IMAGE_PATH:-"/mnt/ssd_backup/template/cache/"}
 
-echo "Custom Container Build Log - $(date)" > container_log.txt
+echo "Custom Container Build Started - $(date)" > container_log.txt
 
 amazon_tarball() {
   local arch=$1
@@ -75,9 +75,10 @@ build_image() {
 }
 
 # Ubuntu builds - creates ubuntu user
-build_image ubuntu jammy amd64
+build_image ubuntu jammy amd64 
 build_image ubuntu noble amd64
-build_image ubuntu questing amd64
+# build_image ubuntu questing amd64 # (25.10) deprecated - switched to resolute (26.04)
+build_image ubuntu resolute amd64
 
 # Debian builds - creates debian user
 build_image debian bookworm amd64
@@ -88,7 +89,7 @@ build_image debian forky amd64
 build_image rockylinux  9 x86_64
 build_image rockylinux 10 x86_64
 
-# CentOS builds - creates cloud-user
+# CentOS builds - creates cloud-user # deprecated - switched to Rockylinux
 # build_image centos  9-Stream x86_64
 # build_image centos 10-Stream x86_64
 

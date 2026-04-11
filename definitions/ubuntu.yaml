@@ -453,6 +453,7 @@ packages:
     - noble
     - plucky
     - questing
+    - resolute
     action: install
 
   - packages:
@@ -492,12 +493,14 @@ packages:
     - noble
     - plucky
     - questing
+    - resolute
 
   - packages:
     - systemd-timesyncd
     action: install
     releases:
     - questing
+    - resolute
 
   - packages:
     - grub-efi-amd64-signed
@@ -627,6 +630,7 @@ actions:
   - noble
   - plucky
   - questing
+  - resolute
 
 - trigger: post-packages
   action: |-
