@@ -31,6 +31,7 @@ packages:
     - noble
     - plucky
     - questing
+    - resolute
     action: install
 
   - packages:
