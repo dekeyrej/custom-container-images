@@ -18,7 +18,7 @@ These patches are intentionally small, reversible, and isolated.
 
 Apply the following modifications on the Proxmox node:
 
-### **1. `PVE/LXC/Config.pm`**  
+### **1. `/usr/share/perl5/PVE/LXC/Config.pm`**  
 Add amazon to the list of valid ostype values (line 520 in my version):
 
 ```perl
@@ -33,7 +33,7 @@ ostype => {
     },
 ```
 
-### **2. `PVE/LXC/Setup.pm`**  
+### **2. `/usr/share/perl5/PVE/LXC/Setup.pm`**  
 Add the Amazon Linux setup module and register it in the plugin tables and detection logic (all within the first 100 lines).
 
 ```perl
@@ -71,14 +71,12 @@ This enables both:
 - Direct detection via /etc/amazon-linux-release
 Together, they allow pct create to auto‑recognize Amazon Linux rootfs images.
 
-### **3. `PVE/LXC/Setup/Amazon.pm`**  
+### **3. `/usr/share/perl5/PVE/LXC/Setup/Amazon.pm`**  
 
-Create this new file.
-
-It is derived from the Fedora setup module, with adjustments for:
-- Amazon Linux 2023 filesystem layout
-- NetworkManager configuration expectations
-- Minor differences in service paths and defaults
+Copy Fedora.pm to Amazon.pm and edit the three lines marked with `# JSD` 
+ - line  1: ```package PVE::LXC::Setup::Amazon;```
+ - line 15: ```die "unsupported Amazon release '$version'\n" if !defined($version) || $version != 2023;```
+ - line 19: ```$conf->{ostype} = "amazon";```
 
 A complete version of this file is included in this repository under
 ```

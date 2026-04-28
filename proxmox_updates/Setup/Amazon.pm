@@ -1,4 +1,4 @@
-package PVE::LXC::Setup::Amazon;
+package PVE::LXC::Setup::Amazon;  # JSD
 
 use strict;
 use warnings;
@@ -12,12 +12,11 @@ sub new {
 
     my $version = $os_release->{VERSION_ID};
     # we cannot really win anything by actively dying on newer versions so only check lower boundary.
-    die "unsupported Amazon release '$version'\n" if !defined($version) || $version != 2023;
+    die "unsupported Amazon release '$version'\n" if !defined($version) || $version != 2023; #JSD
 
     my $self = { conf => $conf, rootdir => $rootdir, version => $version };
 
-    # $conf->{ostype} = "fedora";
-    $conf->{ostype} = "amazon";
+    $conf->{ostype} = "amazon"; # JSD
 
     return bless $self, $class;
 }

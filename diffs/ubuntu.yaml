@@ -24,16 +24,7 @@ packages:
   update: true
   cleanup: true
   sets:
-  - packages:
-    - fuse3
-    releases:
-    - jammy
-    - noble
-    - plucky
-    - questing
-    - resolute
-    action: install
-
+  
   - packages:
     - openssh-client
     - openssh-server  # allow ssh in JSD

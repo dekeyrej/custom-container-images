@@ -105,6 +105,11 @@ sudo ./build_all.sh
 
 - **`build_all.sh`**  
   Builds all images using **distrobuilder (must be built from source)** and copies them to the Proxmox‑VE 9 node.
+- **`build_image.sh`**
+  Builds command-line specified images with images as `distro:release` e.g.,
+  ```bash
+  sudo build_image.sh debian:forky ubuntu:resolute
+  ```
 
 ---
 
@@ -113,7 +118,7 @@ sudo ./build_all.sh
 Most distros require:
 
 - Two `files` blocks  
-- One or two `packages` edits  
+- One `packages` edit
 - One `actions` block  
 - Some distros (Rocky, CentOS, Amazon) also require `source` tweaks
 
@@ -148,15 +153,6 @@ packages:
   update: true
   cleanup: true
   sets:
-  - packages:
-    - fuse3
-    releases:
-    - jammy
-    - noble
-    - plucky
-    - questing
-    action: install
-
   - packages:
     - openssh-client
     - openssh-server  # allow ssh in JSD
