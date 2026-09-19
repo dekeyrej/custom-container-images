@@ -123,7 +123,7 @@ if [[ $# -gt 0 ]]; then
   done
 else
   # No args: fall back to previous default builds
-  default_images=("ubuntu:resolute" "debian:forky")
+  default_images=("ubuntu:noble" "ubuntu:resolute" "debian:trixie" "debian:forky")
   for img in "${default_images[@]}"; do
     distro="${img%%:*}"
     release="${img#*:}"

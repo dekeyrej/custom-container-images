@@ -944,6 +944,19 @@ source:
     =swbo
     -----END PGP PUBLIC KEY BLOCK-----
 
+  # loong64
+  - |-
+    -----BEGIN PGP PUBLIC KEY BLOCK-----
+
+    xjMEaULb+RYJKwYBBAHaRw8BAQdAvuJgxoTDZMhKQRZWy8nsuGOLcFCw9an51E4M
+    hD+AoCfNJURlYmlhbiBUcml4aWUgRm9yIExvb25nNjQgU2lnbmluZyBLZXnClgQT
+    FgoAPhYhBHNPq4rcY2kJxmJYg9ge1RSge52oBQJpQtv5AhsDBQkJZgGABQsJCAcC
+    BhUKCQgLAgQWAgMBAh4BAheAAAoJENge1RSge52okNYA/03lT7LUV6D20ovK7/oT
+    cxqYAllFPTMq8HF3nOa1hJnnAQDp+8p5igx/WhedFuhqpifeQsRUitQcbW4q2A5j
+    9/pnDQ==
+    =EKk4
+    -----END PGP PUBLIC KEY BLOCK-----
+
   variant: minbase
 
 targets:
@@ -1119,6 +1132,7 @@ packages:
   cleanup: true
   sets:
   - packages:
+    - curl
     - dialog
     - init
     - iproute2
@@ -1139,10 +1153,18 @@ packages:
   - packages:
     - isc-dhcp-client
     releases:
-    - bullseye
     - bookworm
     - trixie
     action: install
+
+  - packages:
+    - debian-loong64-non-official-archive-keyring
+    action: install
+    early: true
+    architectures:
+    - loong64
+    releases:
+    - trixie
 
   - packages:
     - dbus
@@ -1161,23 +1183,6 @@ packages:
     action: install
     variants:
     - cloud
-
-  - packages:
-    - resolvconf
-    action: install
-    variants:
-    - cloud
-    releases:
-    - bullseye
-
-  - packages:
-    - policykit-1
-    action: install
-    architectures:
-    - amd64
-    - arm64
-    releases:
-    - bullseye
 
   - packages:
     - polkitd
@@ -1251,6 +1256,31 @@ packages:
       deb http://deb.debian.org/debian {{ image.release }} main contrib
       deb http://deb.debian.org/debian {{ image.release }}-updates main contrib
       deb http://deb.debian.org/debian-security/ {{ image.release }}-security main contrib
+    architectures:
+    - amd64
+    - arm64
+    - armhf
+    - riscv64
+
+  - name: sources.list
+    url: |-
+      deb https://loong13.debian.net/debian-loong64/ {{ image.release }} main contrib
+      deb https://loong13.debian.net/debian-loong64/ {{ image.release }}-updates main contrib
+      deb https://loong13.debian.net/debian-loong64-security/ {{ image.release }}-security main contrib
+    architectures:
+    - loong64
+    releases:
+    - trixie
+
+  - name: sources.list
+    url: |-
+      deb http://deb.debian.org/debian {{ image.release }} main contrib
+      deb http://deb.debian.org/debian {{ image.release }}-updates main contrib
+      deb http://deb.debian.org/debian-security/ {{ image.release }}-security main contrib
+    architectures:
+    - loong64
+    releases:
+    - forky
 
 actions:
 # create debian user JSD
@@ -1264,7 +1294,7 @@ actions:
     useradd --create-home -s /bin/bash -G sudo -U debian
   variants:
   - default
-
+  
 - trigger: post-unpack
   action: |-
     #!/bin/sh
@@ -1291,50 +1321,12 @@ actions:
     #!/bin/sh
     set -eux
 
-    # Disable networkd service; this prevents the container from getting 2 IPv4 addresses on
-    # startup. This only happens on debian/bullseye/cloud images.
-    systemctl disable systemd-networkd.socket
-    systemctl disable systemd-networkd.service
-  variants:
-  - cloud
-  releases:
-  - bullseye
-
-- trigger: post-packages
-  action: |-
-    #!/bin/sh
-    set -eux
-
     # Enable systemd-resolved
     systemctl enable systemd-resolved.service
   releases:
   - bookworm
   - trixie
   - forky
-
-- trigger: post-packages
-  action: |-
-    #!/bin/sh
-    set -eux
-
-    # Enable systemd-resolved
-    systemctl enable systemd-resolved.service
-  variants:
-  - default
-  releases:
-  - bullseye
-
-- trigger: post-packages
-  action: |-
-    #!/bin/sh
-    set -eux
-
-    # Disable systemd-resolved
-    systemctl disable systemd-resolved.service
-  variants:
-  - cloud
-  releases:
-  - bullseye
 
 - trigger: post-packages
   action: |-
@@ -1367,6 +1359,7 @@ actions:
   action: |-
     #!/bin/sh
     set -eux
+
     update-initramfs -u
   types:
   - vm
@@ -1416,6 +1409,8 @@ actions:
     systemctl enable incus-growpart
   types:
   - vm
+  variants:
+  - default
 
 - trigger: post-files
   action: |-
@@ -1428,30 +1423,6 @@ actions:
   - bookworm
   - trixie
   - forky
-
-- trigger: post-files
-  action: |-
-    #!/bin/sh
-    set -eux
-
-    umount -l /etc/resolv.conf || true
-    ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
-  releases:
-  - bullseye
-  variants:
-  - default
-
-- trigger: post-files
-  action: |-
-    #!/bin/sh
-    set -eux
-
-    umount -l /etc/resolv.conf || true
-    ln -sf /run/resolvconf/resolv.conf /etc/resolv.conf
-  releases:
-  - bullseye
-  variants:
-  - cloud
 
 mappings:
   architecture_map: debian

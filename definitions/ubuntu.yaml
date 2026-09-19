@@ -451,11 +451,11 @@ packages:
     releases:
     - jammy
     - noble
-    - questing
     - resolute
     action: install
 
   - packages:
+    - curl
     - openssh-client
     - openssh-server  # allow ssh in JSD
     - sudo
@@ -471,6 +471,7 @@ packages:
     - armhf
     - powerpc
     - powerpc64
+    - s390x
 
   - packages:
     - language-pack-en
@@ -490,14 +491,12 @@ packages:
     action: install
     releases:
     - noble
-    - questing
     - resolute
 
   - packages:
     - systemd-timesyncd
     action: install
     releases:
-    - questing
     - resolute
 
   - packages:
@@ -573,20 +572,9 @@ packages:
     - powerpc64
     - ppc64el
     - riscv64
+    - s390x
 
 actions:
-# add default user JSD
-- trigger: post-update
-  action: |-
-    #!/bin/sh
-    set -eux
-
-    # Create the ubuntu user account
-    getent group sudo >/dev/null 2>&1 || groupadd --system sudo
-    useradd --create-home -s /bin/bash -G sudo -U ubuntu
-  variants:
-  - default
-
 - trigger: post-unpack
   action: |-
     #!/bin/sh
@@ -606,6 +594,17 @@ actions:
     [ ! -d /run/systemd ] && exit 0
     chattr -i /run/systemd
 
+- trigger: post-update
+  action: |-
+    #!/bin/sh
+    set -eux
+
+    # Create the ubuntu user account
+    getent group sudo >/dev/null 2>&1 || groupadd --system sudo
+    useradd --create-home -s /bin/bash -G sudo -U ubuntu
+  variants:
+  - default
+
 - trigger: post-packages
   action: |-
     #!/bin/sh
@@ -623,10 +622,11 @@ actions:
     set -eux
 
     # Ensure /etc/resolv.conf is symlinked to /run/systemd/resolve/stub-resolv.conf
+    umount -l /etc/resolv.conf || true
+    rm -f /etc/resolv.conf
     ln -sf ../run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
   releases:
   - noble
-  - questing
   - resolute
 
 - trigger: post-packages
