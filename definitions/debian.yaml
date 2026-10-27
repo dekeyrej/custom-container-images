@@ -1031,45 +1031,45 @@ files:
 - path: /var/lib/dbus/machine-id
   generator: remove
 
-- path: /etc/systemd/network/eth0.network
-  generator: dump
-  content: |-
-    [Match]
-    Name=eth0
+# - path: /etc/systemd/network/eth0.network
+#   generator: dump
+#   content: |-
+#     [Match]
+#     Name=eth0
 
-    [Network]
-    DHCP=true
+#     [Network]
+#     DHCP=true
 
-    [DHCPv4]
-    UseDomains=true
-    UseMTU=true
+#     [DHCPv4]
+#     UseDomains=true
+#     UseMTU=true
 
-    [DHCP]
-    ClientIdentifier=mac
-  types:
-  - container
-  variants:
-  - default
+#     [DHCP]
+#     ClientIdentifier=mac
+#   types:
+#   - container
+#   variants:
+#   - default
 
-- path: /etc/systemd/network/enp5s0.network
-  generator: dump
-  content: |-
-    [Match]
-    Name=enp5s0
+# - path: /etc/systemd/network/enp5s0.network
+#   generator: dump
+#   content: |-
+#     [Match]
+#     Name=enp5s0
 
-    [Network]
-    DHCP=true
+#     [Network]
+#     DHCP=true
 
-    [DHCPv4]
-    UseDomains=true
-    UseMTU=true
+#     [DHCPv4]
+#     UseDomains=true
+#     UseMTU=true
 
-    [DHCP]
-    ClientIdentifier=mac
-  types:
-  - vm
-  variants:
-  - default
+#     [DHCP]
+#     ClientIdentifier=mac
+#   types:
+#   - vm
+#   variants:
+#   - default
 
 - path: /etc/default/grub.d/50-incus.cfg
   generator: dump
@@ -1231,6 +1231,15 @@ packages:
     - arm64
 
   - packages:
+    - grub-efi-loong64
+    - linux-image-loong64
+    action: install
+    types:
+    - vm
+    architectures:
+    - loong64
+
+  - packages:
     - cloud-guest-utils
     action: install
     types:
@@ -1241,6 +1250,9 @@ packages:
     action: install
     types:
     - vm
+    architectures:
+    - amd64
+    - arm64
 
   - packages:
     - netplan.io
@@ -1294,7 +1306,6 @@ actions:
     useradd --create-home -s /bin/bash -G sudo -U debian
   variants:
   - default
-  
 - trigger: post-unpack
   action: |-
     #!/bin/sh
@@ -1307,14 +1318,14 @@ actions:
   variants:
   - cloud
 
-- trigger: post-packages
-  action: |-
-    #!/bin/sh
-    set -eux
+# - trigger: post-packages
+#   action: |-
+#     #!/bin/sh
+#     set -eux
 
-    # Enable networkd
-    systemctl enable systemd-networkd.service
-    systemctl enable systemd-networkd.socket
+#     # Enable networkd
+#     systemctl enable systemd-networkd.service
+#     systemctl enable systemd-networkd.socket
 
 - trigger: post-packages
   action: |-
@@ -1371,16 +1382,18 @@ actions:
     #!/bin/sh
     set -eux
 
-    TARGET="x86_64"
-    [ "$(uname -m)" = "aarch64" ] && TARGET="arm64"
+    TARGET="$(uname -m)"
+    SECURE_BOOT="--uefi-secure-boot"
+    [ "$TARGET" = "aarch64" ] && TARGET="arm64"
+    [ "$TARGET" = "loongarch64" ] && SECURE_BOOT="--no-uefi-secure-boot"
 
     update-grub
 
     # This will create EFI/BOOT
-    grub-install --uefi-secure-boot --target="${TARGET}-efi" --no-nvram --removable
+    grub-install "$SECURE_BOOT" --target="${TARGET}-efi" --no-nvram --removable
 
     # This will create EFI/debian
-    grub-install --uefi-secure-boot --target="${TARGET}-efi" --no-nvram
+    grub-install "$SECURE_BOOT" --target="${TARGET}-efi" --no-nvram
 
     update-grub
     sed -i "s#root=[^ ]*#root=${DISTROBUILDER_ROOT_UUID}#g" /boot/grub/grub.cfg

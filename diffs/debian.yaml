@@ -19,6 +19,46 @@ files:
   variants:
   - default
 
+# - path: /etc/systemd/network/eth0.network
+#   generator: dump
+#   content: |-
+#     [Match]
+#     Name=eth0
+
+#     [Network]
+#     DHCP=true
+
+#     [DHCPv4]
+#     UseDomains=true
+#     UseMTU=true
+
+#     [DHCP]
+#     ClientIdentifier=mac
+#   types:
+#   - container
+#   variants:
+#   - default
+
+# - path: /etc/systemd/network/enp5s0.network
+#   generator: dump
+#   content: |-
+#     [Match]
+#     Name=enp5s0
+
+#     [Network]
+#     DHCP=true
+
+#     [DHCPv4]
+#     UseDomains=true
+#     UseMTU=true
+
+#     [DHCP]
+#     ClientIdentifier=mac
+#   types:
+#   - vm
+#   variants:
+#   - default
+
 packages:
   manager: apt
   update: true
@@ -54,3 +94,12 @@ actions:
     useradd --create-home -s /bin/bash -G sudo -U debian
   variants:
   - default
+
+# - trigger: post-packages
+#   action: |-
+#     #!/bin/sh
+#     set -eux
+
+#     # Enable networkd
+#     systemctl enable systemd-networkd.service
+#     systemctl enable systemd-networkd.socket
